@@ -14,9 +14,9 @@ exports.createNote = [
         return res.status(400).json({ errors: errors.array() })
     }
 
+    const note = new Note(req.body);
 
     try {
-        const note = new Note(req.body);
         await note.save();
         res.status(201).json(note);
     } catch (error) {
@@ -28,7 +28,6 @@ exports.createNote = [
 
 exports.getNotes = async (req, res) => {
     try {
-
         const notes = await Note.find();
         res.json(notes);
     } catch (error) {
@@ -38,6 +37,13 @@ exports.getNotes = async (req, res) => {
 
 
 exports.getNoteById = async (req, res) => {
+    const { id } = req.params
+    // validate if the id is a valid ObjectId 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid note ID format' })
+    }
+
+
     try {
         const note = await Note.findById(req.params.id);
 
@@ -52,9 +58,14 @@ exports.getNoteById = async (req, res) => {
 
 
 exports.deleteNoteById = async (req, res) => {
-    try {
-        const { id } = req.params;
 
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid note ID format' })
+    }
+
+    try {
         // attempt to dfind and delete note by ID
         const deletedNote = await Note.findByIdAndDelete(id);
 
@@ -71,20 +82,36 @@ exports.deleteNoteById = async (req, res) => {
 }
 
 
-exports.updateNoteById = async (req, res) => {
-    try {
+exports.updateNoteById = [
+    body('title').optional().isString().withMessage('Title must be a string'),
+    body('content').optional().isString().withMessage('Content must be a string')
+],
+    async (req, res) => {
+        const { title, content } = req.body;
+        if (!title && !content) {
+            return res.status(400).json({ message: 'At least one field (title or content)' })
+        }
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() })
+        }
+
+
         const { id } = req.params;
         const updatedData = req.body;
 
-        const updateNote = await Note.findByIdAndUpdate(id, updatedData, { new: true })
 
-        if (!updateNote) {
-            return res.status(404).json({ message: 'Note not found' })
+        try {
+            const updateNote = await Note.findByIdAndUpdate(id, updatedData, { new: true })
+
+            if (!updateNote) {
+                return res.status(404).json({ message: 'Note not found' })
+            }
+
+            return res.status(200).json(updateNote)
+        } catch (err) {
+            return res.status(500).json({ message: 'Server error', err })
+
         }
-
-        return res.status(200).json(updateNote)
-    } catch (err) {
-        return res.status(500).json({ message: 'Server error', err })
-
     }
-}
