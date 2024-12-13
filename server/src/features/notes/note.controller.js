@@ -39,3 +39,32 @@ exports.getNoteById = async (req, res) => {
         res.status(500).json({ message: "Server error" })
     }
 }
+
+
+exports.deleteNoteById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // attempt to dfind and delete note by ID
+        const deletedNote = await Note.findByIdAndDelete(id);
+
+        if (!deletedNote) {
+            return res.status(404).json({ message: 'Note not found' })
+        }
+
+        return res.status(200).json({ message: 'Note deleted successfully' })
+
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error', err })
+
+    }
+}
+
+
+exports.updateNoteById = async (req, res) => {
+    try {
+
+    } catch (err) {
+
+    }
+}
