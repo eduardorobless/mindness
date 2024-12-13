@@ -84,13 +84,24 @@ exports.deleteNoteById = async (req, res) => {
 
 exports.updateNoteById = [
     body('title').optional().isString().withMessage('Title must be a string'),
-    body('content').optional().isString().withMessage('Content must be a string')
+    body('content').optional().isString().withMessage('Content must be a string'),
+    body().custom(({ req }) => {
+        if (!req.body.title && !req.body.content) {
+
+            return Promise.reject({
+                errors: [
+                    {
+                        msg: 'At least one field (title or content) must be provided',
+                        param: 'title or content',
+                        location: 'body'
+                    }
+                ]
+            })
+        }
+        return true;
+    })
 ],
     async (req, res) => {
-        const { title, content } = req.body;
-        if (!title && !content) {
-            return res.status(400).json({ message: 'At least one field (title or content)' })
-        }
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
