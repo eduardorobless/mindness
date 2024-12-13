@@ -63,8 +63,18 @@ exports.deleteNoteById = async (req, res) => {
 
 exports.updateNoteById = async (req, res) => {
     try {
+        const { id } = req.params;
+        const updatedData = req.body;
 
+        const updateNote = await Note.findByIdAndUpdate(id, updatedData, { new: true })
+
+        if (!updateNote) {
+            return res.status(404).json({ message: 'Note not found' })
+        }
+
+        return res.status(200).json(updateNote)
     } catch (err) {
+        return res.status(500).json({ message: 'Server error', err })
 
     }
 }
