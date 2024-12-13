@@ -1,10 +1,20 @@
 const Note = require('./note.model')
-
-
+const { body, validationResult } = require('express-validator')
 
 // Create a new Nodte
 
-exports.createNote = async (req, res) => {
+exports.createNote = [
+    body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be string'),
+    body('content').notEmpty().withMessage('Content is required').isString().withMessage('Content must be string')
+], async (req, res) => {
+
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
+
+
     try {
         const note = new Note(req.body);
         await note.save();
