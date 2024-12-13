@@ -1,28 +1,31 @@
 const Note = require('./note.model')
 const { body, validationResult } = require('express-validator')
+const mongoose = require('mongoose');
 
 // Create a new Nodte
 
 exports.createNote = [
     body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be string'),
-    body('content').notEmpty().withMessage('Content is required').isString().withMessage('Content must be string')
-], async (req, res) => {
+    body('content').notEmpty().withMessage('Content is required').isString().withMessage('Content must be string'),
 
-    const errors = validationResult(req)
+    async (req, res) => {
 
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        const errors = validationResult(req)
+
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() })
+        }
+
+        const note = new Note(req.body);
+
+        try {
+            await note.save();
+            res.status(201).json(note);
+        } catch (error) {
+            res.status(400).json({ error: error.message })
+        }
     }
-
-    const note = new Note(req.body);
-
-    try {
-        await note.save();
-        res.status(201).json(note);
-    } catch (error) {
-        res.status(400).json({ error: error.message })
-    }
-}
+]
 
 // Fetch all notes 
 
@@ -85,7 +88,8 @@ exports.deleteNoteById = async (req, res) => {
 exports.updateNoteById = [
     body('title').optional().isString().withMessage('Title must be a string'),
     body('content').optional().isString().withMessage('Content must be a string'),
-    body().custom(({ req }) => {
+    body().custom((value, { req }) => {
+        console.log('a')
         if (!req.body.title && !req.body.content) {
 
             return Promise.reject({
@@ -99,8 +103,8 @@ exports.updateNoteById = [
             })
         }
         return true;
-    })
-],
+    }),
+
     async (req, res) => {
 
         const errors = validationResult(req);
@@ -112,7 +116,7 @@ exports.updateNoteById = [
         const { id } = req.params;
         const updatedData = req.body;
 
-
+        console.log(id)
         try {
             const updateNote = await Note.findByIdAndUpdate(id, updatedData, { new: true })
 
@@ -126,3 +130,4 @@ exports.updateNoteById = [
 
         }
     }
+]
