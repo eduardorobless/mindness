@@ -1,31 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 
 
 function App() {
-    const [tableData, setTableData] = useState([
-        { id: 1, name: 'John Doe', age: 25 },
-        { id: 2, name: 'Jane Smith', age: 30 },
-        { id: 3, name: 'Sam Wilson', age: 22 }
-    ])
+    const [tableData, setTableData] = useState([])
 
+    const [loading, setLoading] = useState(true)
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('http://[::1]:5000/api')
+                const result = await response.json()
+                setTableData(result)
+            } catch (error) {
+                console.error('Error fetching data: ', error)
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchData();
+
+    }, [])
+
+
+    if (loading) {
+        return <div>Loading...</div>
+    }
 
     return (
         <div>
-            <h1>Users</h1>
+            <h1>Notes</h1>
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Age</th>
+                        <th>Title</th>
+                        <th>Content</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {tableData.map((user) => (
-                        <tr key={user.id}>
-                            <td>{user.name}</td>
-                            <td>{user.age}</td>
+                    {tableData.map((note) => (
+                        <tr key={note._id}>
+                            <td>{note.title}</td>
+                            <td>{note.content}</td>
                         </tr>
                     ))}
                 </tbody>
