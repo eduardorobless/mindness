@@ -61,15 +61,35 @@ function App() {
                 resetFields()
 
             } else {
-                console.error('Failed to update data')
+                console.error('Failed to update note')
             }
         } catch (error) {
-            console.error('Error updating data: ', error)
+            console.error('Error updating note: ', error)
         }
     }
 
     const handleCancel = () => {
         resetFields()
+    }
+
+
+    const handleDelete = async (note) => {
+        try {
+            const response = await fetch(`http://[::1]:5000/api/${note._id}`, {
+                method: 'DELETE',
+            })
+            if (response.ok) {
+                setTableData((prevData) =>
+                    prevData.filter((item) => item._id !== note._id)
+                )
+            }
+            else {
+                console.error('Failed to delete note')
+            }
+        } catch (error) {
+            console.error('Error deleting note: ', error)
+        }
+
     }
 
     const resetFields = () => {
@@ -78,7 +98,9 @@ function App() {
     }
 
 
+    const handleAdd = async () => {
 
+    }
 
     if (loading) {
         return <div>Loading...</div>
@@ -138,6 +160,10 @@ function App() {
                                         <button onClick={() => handleEdit(note)} >Edit</button>
                                     )
                                 }
+                            </td>
+
+                            <td>
+                                <button onClick={() => handleDelete(note)}> Delete </button>
                             </td>
                         </tr>
                     ))}
