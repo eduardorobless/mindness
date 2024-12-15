@@ -10,14 +10,19 @@ function App() {
 
 
     const [editingRow, setEditingRow] = useState(null)
-    const [editedRowData, setEditedRowData] = useState({ title: '', content: '' })
+
+    const [newRow, setNewRow] = useState({ 'title': '', 'content': '' })
+    const [isAdding, setIsAdding] = useState(false)
+
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await fetch('http://[::1]:5000/api')
                 const result = await response.json()
-                setTableData(result)
+
+                const sortedData = result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                setTableData(sortedData)
             } catch (error) {
                 console.error('Error fetching data: ', error)
             } finally {
@@ -30,47 +35,79 @@ function App() {
     }, [])
 
 
-    const handleEdit = (note) => {
-        console.log('editing: ', note._id)
 
-        setEditingRow(note._id)
-        setEditedRowData({ title: note.title, content: note.content })
-    };
-
-    const handleChange = (e) => {
-        setEditedRowData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const handleAddRow = () => {
+        setIsAdding(true)
     }
 
+    const handleChange = (e) => {
+        setNewRow((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    }
+
+
     const handleConfirm = async () => {
-        try {
-            const response = await fetch(`http://[::1]:5000/api/${editingRow}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(editedRowData)
-            })
+        if (isAdding) {
+            try {
 
-            if (response.ok) {
+                const response = await fetch(`http://[::1]:5000/api`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newRow),
+                })
 
-                setTableData((prevData) =>
-                    prevData.map((note) =>
-                        note._id == editingRow ? { ...note, ...editedRowData } : note
-                    ))
+                if (response.ok) {
+                    const result = await response.json()
+                    setTableData((prevData) => [result, ...prevData])
+                    resetFields()
+                } else {
+                    console.error('Failed to add note')
+                }
 
-                resetFields()
+            } catch (error) {
+                console.error('Error adding note: ', error)
 
-            } else {
-                console.error('Failed to update note')
             }
-        } catch (error) {
-            console.error('Error updating note: ', error)
+
+        } else {
+            try {
+                const response = await fetch(`http://[::1]:5000/api/${editingRow}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newRow)
+                })
+
+                if (response.ok) {
+
+                    setTableData((prevData) =>
+                        prevData.map((note) =>
+                            note._id == editingRow ? { ...note, ...newRow } : note
+                        ))
+
+                    resetFields()
+
+                } else {
+                    console.error('Failed to update note')
+                }
+            } catch (error) {
+                console.error('Error updating note: ', error)
+            }
         }
+
     }
 
     const handleCancel = () => {
         resetFields()
     }
+
+    const handleEdit = (note) => {
+        setEditingRow(note._id)
+        setNewRow({ title: note.title, content: note.content })
+    };
+
 
 
     const handleDelete = async (note) => {
@@ -94,7 +131,8 @@ function App() {
 
     const resetFields = () => {
         setEditingRow(null)
-        setEditedRowData({ title: '', content: '' })
+        setNewRow({ title: '', content: '' })
+        setIsAdding(false)
     }
 
 
@@ -109,14 +147,43 @@ function App() {
     return (
         <div>
             <h1>Notes</h1>
+            <button onClick={handleAddRow}>Add Row</button>
+
             <table>
                 <thead>
                     <tr>
                         <th>Title</th>
                         <th>Content</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
+
+                    {isAdding && (
+                        <tr>
+                            <td>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={newRow.title}
+                                    onChange={handleChange}
+                                    placeholder="Title" />
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    name="content"
+                                    value={newRow.content}
+                                    onChange={handleChange}
+                                    placeholder="Content" />
+                            </td>
+                            <td>
+                                <button onClick={handleConfirm}>Confirm</button>
+                                <button onClick={handleCancel}>Cancel</button>
+                            </td>
+                        </tr>
+                    )}
+
                     {tableData.map((note) => (
                         <tr key={note._id}>
                             <td>
@@ -125,7 +192,7 @@ function App() {
                                     <input
                                         type="text"
                                         name="title"
-                                        value={editedRowData.title}
+                                        value={newRow.title}
                                         onChange={handleChange}
                                     />
                                 ) : (
@@ -140,7 +207,7 @@ function App() {
                                         <input
                                             type="text"
                                             name="content"
-                                            value={editedRowData.content}
+                                            value={newRow.content}
                                             onChange={handleChange}
                                         />
                                     ) : (
