@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 import '../styles/index.css'
 
-
 function App() {
     const [tableData, setTableData] = useState([])
 
