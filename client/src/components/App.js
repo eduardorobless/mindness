@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-
+import '../styles/index.css'
 
 
 function App() {
@@ -145,97 +145,102 @@ function App() {
     }
 
     return (
-        <div>
-            <h1>Notes</h1>
-            <button onClick={handleAddRow}>Add Row</button>
+        <div className='container'>
+            <div className='main-content'>
+                <h1>Notes</h1>
+                <button id="addRowButton" onClick={handleAddRow}>Add Row</button>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Content</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {isAdding && (
+                <table id="note-table">
+                    <thead>
                         <tr>
-                            <td>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    value={newRow.title}
-                                    onChange={handleChange}
-                                    placeholder="Title" />
-                            </td>
-                            <td>
-                                <input
-                                    type="text"
-                                    name="content"
-                                    value={newRow.content}
-                                    onChange={handleChange}
-                                    placeholder="Content" />
-                            </td>
-                            <td>
-                                <button onClick={handleConfirm}>Confirm</button>
-                                <button onClick={handleCancel}>Cancel</button>
-                            </td>
+                            <th>Title</th>
+                            <th>Content</th>
+                            <th colSpan={2}>Actions</th>
+
                         </tr>
-                    )}
+                    </thead>
+                    <tbody>
 
-                    {tableData.map((note) => (
-                        <tr key={note._id}>
-                            <td>
-
-                                {editingRow === note._id ? (
+                        {isAdding && (
+                            <tr>
+                                <td>
                                     <input
                                         type="text"
                                         name="title"
                                         value={newRow.title}
                                         onChange={handleChange}
-                                    />
-                                ) : (
-                                    note.title
-                                )
-                                }
-                            </td>
+                                        placeholder="Title" />
+                                </td>
+                                <td>
+                                    <input
+                                        type="text"
+                                        name="content"
+                                        value={newRow.content}
+                                        onChange={handleChange}
+                                        placeholder="Content" />
+                                </td>
+                                <td>
+                                    <button onClick={handleConfirm}>Confirm</button>
+                                </td>
+                                <td>
+                                    <button onClick={handleCancel}>Cancel</button>
+                                </td>
+                            </tr>
+                        )}
 
-                            <td>
-                                {
-                                    editingRow === note._id ? (
+                        {tableData.map((note) => (
+                            <tr key={note._id}>
+                                <td>
+
+                                    {editingRow === note._id ? (
                                         <input
                                             type="text"
-                                            name="content"
-                                            value={newRow.content}
+                                            name="title"
+                                            value={newRow.title}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        note.content
+                                        note.title
                                     )
-                                }
+                                    }
+                                </td>
 
-                            </td>
-                            <td>
-                                {
-                                    editingRow === note._id ? (
-                                        <>
-                                            <button onClick={handleConfirm}>Confirm</button>
-                                            <button onClick={handleCancel}>Cancel</button>
-                                        </>
-                                    ) : (
-                                        <button onClick={() => handleEdit(note)} >Edit</button>
-                                    )
-                                }
-                            </td>
+                                <td>
+                                    {
+                                        editingRow === note._id ? (
+                                            <input
+                                                type="text"
+                                                name="content"
+                                                value={newRow.content}
+                                                onChange={handleChange}
+                                            />
+                                        ) : (
+                                            note.content
+                                        )
+                                    }
 
-                            <td>
-                                <button onClick={() => handleDelete(note)}> Delete </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                </td>
+                                <td>
+                                    {
+                                        editingRow === note._id ? (
+                                            <>
+                                                <button onClick={handleConfirm}>Confirm</button>
+                                                <button onClick={handleCancel}>Cancel</button>
+                                            </>
+                                        ) : (
+                                            <button onClick={() => handleEdit(note)} >Edit</button>
+                                        )
+                                    }
+                                </td>
+
+                                <td>
+                                    <button onClick={() => handleDelete(note)}> Delete </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 
